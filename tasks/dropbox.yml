@@ -100,10 +100,14 @@
    - nautilus-dropbox
    - libappindicator1
 
-- name: dropbox | Check dropboxd status
-  command: dropbox status
-  register: status
+- block:        # for checking if dropbox is running as dropbox_owner
+  - name: dropbox | Check dropboxd status
+    command: dropbox status
+    register: status
+    changed_when: false
 
-- name: dropbox | Start dropboxd
-  shell: dropbox start >/dev/null 2>&1
-  when: status.stdout == "Dropbox isn't running!"
+  - name: dropbox | Start dropboxd
+    shell: dropbox start >/dev/null 2>&1
+    when: status.stdout == "Dropbox isn't running!"
+  become: true
+  become_user: "{{ dropbox_owner }}"
